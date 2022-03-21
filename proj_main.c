@@ -16,14 +16,14 @@ void add_airport() {
 
 	scanf("%s%s%s", input.ID, input.country, input.city);
 
-	if (num_airport == MAX_AIRPORT) {
-		printf("too many airports\n");
-		return;
-	}
 	for (i = 0; i < 3; i++) {
 		if (input.ID[i] > 'Z' || input.ID[i] < 'A')
 			printf("invalid airport ID\n");
 			return;
+	}
+		if (num_airport == MAX_AIRPORT) {
+		printf("too many airports\n");
+		return;
 	}
 	for (i = 0; i < num_airport; i++) {
 		if (strcmp(airport_list[i].ID, input.ID)) {
