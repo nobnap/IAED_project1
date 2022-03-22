@@ -1,5 +1,6 @@
 # include <stdio.h>
 # include <string.h>
+# include <stdlib.h>
 # include "types.h"
 
 date current_date = {1, 1, 2022};
@@ -41,12 +42,17 @@ void list_airport() {
 
 }
 
-void input_reader() {
+// maybe usar exit_success???
+int input_reader() {
 	char command;
-	while (command != 'q') {
-		switch (command = getchar()) {
+	while (1) {
+		command = getchar();
+		switch (command) {
+			case 'q':
+				return EXIT_SUCCESS;
 			case 'a':
 				add_airport();
+				break;
 			/*case 'l':
 				list_airport();
 			case 'v':
@@ -57,6 +63,7 @@ void input_reader() {
 				flight_arrivals();
 			case 't':
 				date_forward();*/
+		getchar();
 		}
 	}
 }
