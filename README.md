@@ -1,1 +1,5 @@
-# IAED_project1
+# 1º Projeto de IAED
+
+## Funções  
+
+1. `q`
