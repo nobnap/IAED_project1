@@ -101,12 +101,11 @@ void flights() {
 	flight input;
 	if (getchar() == '\n') {
 		for (i = 0; i < num_flights; i++) {
-			input = flight_list[i];
 			printf("%s %s %s %d-%d-%d %d:%d\n", flight_list[i].code,
-			      flight_list[i].dep_ID, flight_list[i].ar_ID,
-			      flight_list[i].dep_date.day, flight_list[i].dep_date.month,
-			      flight_list[i].dep_date.year, flight_list[i].dep_time.hour,
-			      flight_list[i].dep_time.min);
+			       flight_list[i].dep_ID, flight_list[i].ar_ID,
+			       flight_list[i].dep_date.day, flight_list[i].dep_date.month,
+			       flight_list[i].dep_date.year, flight_list[i].dep_time.hour,
+			       flight_list[i].dep_time.min);
 		}
 	} else {
 		scanf("%s %s %s %d-%d-%d %d:%d %d:%d %d", input.code, input.dep_ID,
@@ -115,16 +114,34 @@ void flights() {
 		      &input.duration.hour, &input.duration.min, &input.passengers);
 		flight_list[num_flights] = input;
 		printf("%s %s %s %d-%d-%d %d:%d\n", flight_list[num_flights].code,
-			      flight_list[num_flights].dep_ID, flight_list[num_flights].ar_ID,
-			      flight_list[num_flights].dep_date.day, flight_list[num_flights].dep_date.month,
-			      flight_list[num_flights].dep_date.year, flight_list[num_flights].dep_time.hour,
-			      flight_list[num_flights].dep_time.min);
+		       flight_list[num_flights].dep_ID, flight_list[num_flights].ar_ID,
+		       flight_list[num_flights].dep_date.day,
+		       flight_list[num_flights].dep_date.month,
+		       flight_list[num_flights].dep_date.year,
+		       flight_list[num_flights].dep_time.hour,
+		       flight_list[num_flights].dep_time.min);
 		num_flights++;
 	}
 }
 
 void departures() {
-	
+	char c = getchar();
+	while (c != '\n') {
+		char ID[MAX_ID];
+		scanf("%s", ID);
+		search_departures(ID);
+		c = getchar();
+	}
+}
+
+void arrivals() {
+	char c = getchar();
+	while (c != '\n') {
+		char ID[MAX_ID];
+		scanf("%s", ID);
+		search_arrivals(ID);
+		c = getchar();
+	}
 }
 
 void date_forward() {
@@ -176,6 +193,7 @@ int before(char A[], char B[]) {
 		else
 			return 0;
 	}
+	return EXIT_FAILURE;
 }
 
 void airport_order() {
@@ -210,15 +228,30 @@ void search_airport(char ID[]) {
 	printf("%s: %s", ID, ERROR_NONEXISTENT_ID);
 }
 
-void search_flight(char code[]) {
-	int i;
+void search_departures(char ID[]) {
+	int i, n = 0;
+	flight list[MAX_FLIGHTS];
 	for (i = 0; i < num_flights; i++) {
-		if (!strcmp(code, flight_list[i].code))
-			printf("%s %s %s %d-%d-%d %d:%d\n", flight_list[i].code,
-			       flight_list[i].dep_ID, flight_list[i].ar_ID,
-			       flight_list[i].dep_date.day, flight_list[i].dep_date.month,
-			       flight_list[i].dep_date.year, flight_list[i].dep_time.hour,
-			       flight_list[i].dep_time.min);
+		if (!strcmp(ID, flight_list[i].dep_ID)) list[n] = flight_list[i];
+		n++;
+	}
+	for (i = 0; i < n; i++) {
+		printf("%s %s %s %d-%d-%d %d:%d\n", list[i].code, list[i].dep_ID,
+		       list[i].ar_ID, list[i].dep_date.day, list[i].dep_date.month,
+		       list[i].dep_date.year, list[i].dep_time.hour, list[i].dep_time.min);
+	}
+}
+
+void search_arrivals(char ID[]) {
+	int i, n = 0;
+	flight list[MAX_FLIGHTS];
+	for (i = 0; i < num_flights; i++) {
+		if (!strcmp(ID, flight_list[i].ar_ID)) list[n] = flight_list[i];
+	}
+	for (i = 0; i < n; i++) {
+		printf("%s %s %s %d-%d-%d %d:%d\n", list[i].code, list[i].dep_ID,
+		       list[i].ar_ID, list[i].dep_date.day, list[i].dep_date.month,
+		       list[i].dep_date.year, list[i].dep_time.hour, list[i].dep_time.min);
 	}
 }
 /* Escrito de acordo com Ortografia Clássica, anterior ao incoerente Acordo
