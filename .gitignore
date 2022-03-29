@@ -52,5 +52,6 @@ Mkfile.old
 dkms.conf
 
 public_tests/
+src/.clang-format
 
 *.pdf
