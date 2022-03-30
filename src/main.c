@@ -1,7 +1,11 @@
 #include "manager.h"
 
+/* !! input reader e flight into arrival tao mto longas!! */
+
 /* definition of global variables */
 date current_date = {1, 1, 2022};
+time midnight = {0, 0};
+date limit_date = {1, 1, 2023};
 
 flight flight_list[MAX_FLIGHTS];
 int num_flights = 0;
@@ -28,9 +32,9 @@ int input_reader() {
 			case 'p':
 				departures();
 				break;
-			/* case 'c':
+			case 'c':
 				arrivals();
-				break; */
+				break;
 			case 't':
 				date_forward();
 				break;
@@ -60,7 +64,7 @@ void add_airport() {
 			return;
 		}
 	}
-	if (num_airport == MAX_AIRPORT) {
+	if (num_airport >= MAX_AIRPORT) {
 		printf(ERROR_AIRPORT_LIMIT);
 		return;
 	}
@@ -80,8 +84,8 @@ void add_airport() {
 void list_airport() {
 	int i, in;
 	char c = getchar();
-	airport_order();
 	if (c == '\n') {
+		airport_order();
 		for (i = 0; i < num_airport; i++) {
 			printf("%s %s %s %d\n", airports[i].ID, airports[i].city,
 			       airports[i].country, flight_counter(airports[i]));
@@ -115,7 +119,44 @@ void flights() {
 		scanf("%s %s %s %d-%d-%d %d:%d %d:%d %d", input.code, input.dep_ID,
 		      input.ar_ID, &input.dep_date.day, &input.dep_date.month,
 		      &input.dep_date.year, &input.dep_time.hour, &input.dep_time.min,
-		      &input.duration.hour, &input.duration.min, &input.passengers);
+		      &input.duration.hour, &input.duration.min, &input.capacity);
+		if (!valid_code(input.code)) {
+			printf(ERROR_CODE);
+			return;
+		}
+		if (search_flight(input)) {
+			printf(ERROR_FLIGHT_DUPLICATE);
+			return;
+		}
+		if (search_airport(input.dep_ID) == -1) {
+			printf("%s: %s", input.dep_ID, ERROR_NONEXISTENT_ID);
+			return;
+		}
+		if (search_airport(input.ar_ID) == -1) {
+			printf("%s: %s", input.ar_ID, ERROR_NONEXISTENT_ID);
+			return;
+		}
+		if (num_flights >= MAX_FLIGHTS) {
+			printf(ERROR_FLIGHT_LIMIT);
+			return;
+		}
+		if (compare_timedate(input.dep_date, input.dep_time, current_date,
+		                     midnight) == -1 ||
+		    compare_timedate(input.dep_date, input.dep_time, limit_date,
+		                     midnight) != -1) {
+			printf(ERROR_DATE);
+			return;
+		}
+		if (input.duration.hour > 12 ||
+		    (input.duration.hour == 12 && input.duration.min > 0)) {
+			printf(ERROR_DURATION);
+			return;
+		}
+		if (input.capacity < 10 || input.capacity > 100) {
+			printf(ERROR_CAPACITY);
+			return;
+		}
+
 		flight_list[num_flights] = input;
 		num_flights++;
 	}
@@ -217,6 +258,7 @@ void airport_order() {
 
 int search_airport(char ID[]) {
 	int lower = 0, middle, upper = num_airport - 1;
+	airport_order();
 	middle = (lower + upper) / 2;
 	while (upper >= lower) {
 		if (!strcmp(ID, airports[middle].ID)) {
@@ -231,6 +273,27 @@ int search_airport(char ID[]) {
 	}
 	printf("%s: %s", ID, ERROR_NONEXISTENT_ID);
 	return -1;
+}
+
+int valid_code(char code[]) {
+	int i;
+	for (i = 0; i < 2; i++) {
+		if (code[i] < 'A' || code[i] > 'Z') return 0;
+	}
+	if (code[i] == '0') return 0;
+	return 1;
+}
+
+int search_flight(flight f) {
+	int i;
+	for (i = 0; i < num_flights; i++) {
+		if (!strcmp(f.code, flight_list[i].code) &&
+		    !compare_timedate(f.dep_date, f.dep_time, flight_list[i].dep_date,
+		                      flight_list[i].dep_time)) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /* Returns -1 if d1 is before d2, 0 if they are the same date and 1 if d1 is
@@ -308,16 +371,45 @@ void search_departures(char ID[]) {
 	}
 }
 
-void arrival_time();
+arrival flight_into_arrival(flight f) {
+	arrival ar;
+	ar.flight = f;
+	ar.date = f.dep_date;
+	ar.time.hour = f.dep_time.hour + f.duration.hour;
+	ar.time.min = f.dep_time.min + f.duration.min;
+	if (ar.time.min >= 60) {
+		ar.time.min -= 60;
+		ar.time.hour++;
+	}
+	if (ar.time.hour >= 24) {
+		ar.time.hour -= 24;
+		ar.date.day++;
+	}
+	if (ar.date.month == 2 && ar.date.day > 28) {
+		ar.date.day -= 28;
+		ar.date.month++;
+	} else if ((ar.date.month == 4 || ar.date.month == 6 || ar.date.month == 9) &&
+	           ar.date.day > 30) {
+		ar.date.day -= 30;
+		ar.date.month++;
+	} else if (ar.date.day > 31) {
+		ar.date.day -= 31;
+		ar.date.month++;
+	}
+	if (ar.date.month > 12) {
+		ar.date.month -= 12;
+		ar.date.year++;
+	}
+	return ar;
+}
 
-void order_arrivals(flight list[], int size) {
+void order_arrivals(arrival list[], int size) {
 	int i, j;
-	flight v;
+	arrival v;
 	for (i = 1; i < size; i++) {
 		v = list[i];
-		for (j = i - 1;
-		     j >= 0 && compare_timedate(v.dep_date, v.dep_time, list[j].dep_date,
-		                                list[j].dep_time) == 1; /* CHANGE VARIABLES !! */
+		for (j = i - 1; j >= 0 && compare_timedate(v.date, v.time, list[j].date,
+		                                           list[j].time) == -1;
 		     j--) {
 			list[j + 1] = list[j];
 		}
@@ -327,17 +419,17 @@ void order_arrivals(flight list[], int size) {
 
 void search_arrivals(char ID[]) {
 	int i, n = 0;
-	flight list[MAX_FLIGHTS];
+	arrival list[MAX_FLIGHTS];
 	for (i = 0; i < num_flights; i++) {
-		if (!strcmp(ID, flight_list[i].dep_ID)) {
-			list[n] = flight_list[i];
+		if (!strcmp(ID, flight_list[i].ar_ID)) {
+			list[n] = flight_into_arrival(flight_list[i]);
 			n++;
 		}
 	}
 	order_arrivals(list, n);
 	for (i = 0; i < n; i++) {
-		printf("%s %s %02d-%02d-%04d %02d:%02d\n", list[i].code, list[i].dep_ID,
-		       list[i].dep_date.day, list[i].dep_date.month, list[i].dep_date.year,
-		       list[i].dep_time.hour, list[i].dep_time.min);
+		printf("%s %s %02d-%02d-%04d %02d:%02d\n", list[i].flight.code,
+		       list[i].flight.dep_ID, list[i].date.day, list[i].date.month,
+		       list[i].date.year, list[i].time.hour, list[i].time.min);
 	}
 }

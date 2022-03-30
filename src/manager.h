@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* String Sizes */
+/* Max String Sizes */
 #define MAX_COUNTRY 31
 #define MAX_CITY 51
 #define MAX_ID 4
-#define MAX_CODE 8
+#define MAX_CODE 7
 
 /* Max Array Sizes */
 #define MAX_AIRPORT 40
@@ -19,6 +19,11 @@
 #define ERROR_AIRPORT_LIMIT "too many airports\n"
 #define ERROR_AIRPORT_DUPLICATE "duplicate airport\n"
 #define ERROR_DATE "invalid date\n"
+#define ERROR_DURATION "invalid duration\n"
+#define ERROR_CODE "invalid flight code\n"
+#define ERROR_FLIGHT_DUPLICATE "flight already exists\n"
+#define ERROR_FLIGHT_LIMIT "too many flights\n"
+#define ERROR_CAPACITY "invalid capacity\n"
 
 /* Structures */
 typedef struct {
@@ -48,13 +53,14 @@ typedef struct {
 	date dep_date;
 	time dep_time;
 	time duration;
-	int passengers;
+	int capacity;
 } flight;
 
 typedef struct {
-	airport airp;
-	int flights_ap;
-} list;
+	flight flight;
+	date date;
+	time time;
+} arrival;
 
 date current_date;
 
@@ -80,10 +86,13 @@ int flight_counter(airport ap);
 int before(char A[], char B[]);
 void airport_order();
 int search_airport(char ID[]);
-void search_flight(char code[]);
+int valid_code(char code[]);
+int search_flight(flight input);
 int relative_date(date d1, date d2);
 int relative_time(time t1, time t2);
+int compare_timedate(date dateA, time timeA, date dateB, time timeB);
 void order_departures(flight list[], int size);
 void search_departures(char ID[]);
-void order_arrivals(flight list[], int size);
+arrival flight_into_arrival(flight f);
+void order_arrivals(arrival list[], int size);
 void search_arrivals(char ID[]);
