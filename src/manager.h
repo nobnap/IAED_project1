@@ -30,6 +30,12 @@ typedef struct {
 } time;
 
 typedef struct {
+	date date;
+	time time;
+} timeDate;
+
+
+typedef struct {
 	char ID[MAX_ID];
 	char country[MAX_COUNTRY];
 	char city[MAX_CITY];
@@ -73,10 +79,11 @@ void read_char(char word[], int size, char end[]);
 int flight_counter(airport ap);
 int before(char A[], char B[]);
 void airport_order();
-void search_airport(char ID[]);
+int search_airport(char ID[]);
 void search_flight(char code[]);
 int relative_date(date d1, date d2);
 int relative_time(time t1, time t2);
-void order_departures(flight list[]);
+void order_departures(flight list[], int size);
 void search_departures(char ID[]);
+void order_arrivals(flight list[], int size);
 void search_arrivals(char ID[]);
