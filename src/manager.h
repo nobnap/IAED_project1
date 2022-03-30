@@ -69,9 +69,14 @@ void arrivals();
 void date_forward();
 
 /* Auxiliary Functions */
-void read_char(char word[], int size, char end);
+void read_char(char word[], int size, char end[]);
 int flight_counter(airport ap);
 int before(char A[], char B[]);
 void airport_order();
 void search_airport(char ID[]);
 void search_flight(char code[]);
+int relative_date(date d1, date d2);
+int relative_time(time t1, time t2);
+void order_departures(flight list[]);
+void search_departures(char ID[]);
+void search_arrivals(char ID[]);
