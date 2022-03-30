@@ -58,7 +58,7 @@ void add_airport() {
 	read_char(input.country, MAX_COUNTRY, "\t ");
 	read_char(input.city, MAX_CITY, "\n");
 
-	for (i = 0; i < MAX_ID - 1; i++) {
+	for (i = 0; input.ID[i] != '\0' ; i++) {
 		if (input.ID[i] > 'Z' || input.ID[i] < 'A') {
 			printf(ERROR_INVALID_ID);
 			return;
@@ -128,12 +128,10 @@ void flights() {
 			printf(ERROR_FLIGHT_DUPLICATE);
 			return;
 		}
-		if (search_airport(input.dep_ID) == -1) {
-			printf("%s: %s", input.dep_ID, ERROR_NONEXISTENT_ID);
+		if (search_airport(input.dep_ID) == -1) { /* Ver o q aconrtce se tiverem na mesma linha e forem ambos invalidos */
 			return;
 		}
 		if (search_airport(input.ar_ID) == -1) {
-			printf("%s: %s", input.ar_ID, ERROR_NONEXISTENT_ID);
 			return;
 		}
 		if (num_flights >= MAX_FLIGHTS) {
@@ -142,8 +140,8 @@ void flights() {
 		}
 		if (compare_timedate(input.dep_date, input.dep_time, current_date,
 		                     midnight) == -1 ||
-		    compare_timedate(input.dep_date, input.dep_time, limit_date,
-		                     midnight) != -1) {
+		    compare_timedate(input.dep_date, midnight, limit_date,
+		                     midnight) == 1) {
 			printf(ERROR_DATE);
 			return;
 		}
@@ -202,6 +200,8 @@ void date_forward() {
 	}
 
 	current_date = new;
+	limit_date = new;
+	limit_date.year++;
 	printf("%02d-%02d-%04d\n", current_date.day, current_date.month,
 	       current_date.year);
 }
@@ -288,8 +288,8 @@ int search_flight(flight f) {
 	int i;
 	for (i = 0; i < num_flights; i++) {
 		if (!strcmp(f.code, flight_list[i].code) &&
-		    !compare_timedate(f.dep_date, f.dep_time, flight_list[i].dep_date,
-		                      flight_list[i].dep_time)) {
+		    !compare_timedate(f.dep_date, midnight, flight_list[i].dep_date,
+		                      midnight)) {
 			return 1;
 		}
 	}
