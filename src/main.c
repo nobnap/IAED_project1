@@ -50,9 +50,9 @@ void add_airport() {
 	/*scanf("%s%s%s", input.ID, input.country, input.city);  Mudar o método de
 	 * leitura do input !! */
 	getchar();
-	read_char(input.ID, MAX_ID, ' ');
-	read_char(input.country, MAX_COUNTRY, ' ');
-	read_char(input.city, MAX_CITY, '\n');
+	read_char(input.ID, MAX_ID, "\t ");
+	read_char(input.country, MAX_COUNTRY, "\t ");
+	read_char(input.city, MAX_CITY, "\n");
 
 	for (i = 0; i < MAX_ID - 1; i++) {
 		if (input.ID[i] > 'Z' || input.ID[i] < 'A') {
@@ -83,8 +83,8 @@ void list_airport() {
 	airport_order();
 	if (c == '\n') {
 		for (i = 0; i < num_airport; i++) {
-			printf("%s %s %s %d\n", airports[i].ID, airports[i].country,
-			       airports[i].city, flight_counter(airports[i]));
+			printf("%s %s %s %d\n", airports[i].ID, airports[i].city,
+			       airports[i].country, flight_counter(airports[i]));
 		}
 	} else {
 		while (c != '\n') {
@@ -101,7 +101,7 @@ void flights() {
 	flight input;
 	if (getchar() == '\n') {
 		for (i = 0; i < num_flights; i++) {
-			printf("%s %s %s %d-%d-%d %d:%d\n", flight_list[i].code,
+			printf("%s %s %s %02d-%02d-%04d %02d:%02d\n", flight_list[i].code,
 			       flight_list[i].dep_ID, flight_list[i].ar_ID,
 			       flight_list[i].dep_date.day, flight_list[i].dep_date.month,
 			       flight_list[i].dep_date.year, flight_list[i].dep_time.hour,
@@ -113,13 +113,6 @@ void flights() {
 		      &input.dep_date.year, &input.dep_time.hour, &input.dep_time.min,
 		      &input.duration.hour, &input.duration.min, &input.passengers);
 		flight_list[num_flights] = input;
-		printf("%s %s %s %d-%d-%d %d:%d\n", flight_list[num_flights].code,
-		       flight_list[num_flights].dep_ID, flight_list[num_flights].ar_ID,
-		       flight_list[num_flights].dep_date.day,
-		       flight_list[num_flights].dep_date.month,
-		       flight_list[num_flights].dep_date.year,
-		       flight_list[num_flights].dep_time.hour,
-		       flight_list[num_flights].dep_time.min);
 		num_flights++;
 	}
 }
@@ -164,11 +157,16 @@ void date_forward() {
 	       current_date.year);
 }
 
-void read_char(char word[], int size, char end) {
-	int i;
+void read_char(char word[], int size, char end[]) {
+	int i, j;
 	char a = getchar();
 	for (i = 0; i < size - 1; i++) {
-		if (a == end) break;
+		for (j = 0; end[j] != '\0'; j++) {
+			if (a == end[j]) {
+				word[i] = '\0';
+				return;
+			}
+		}
 		word[i] = a;
 		a = getchar();
 	}
@@ -214,8 +212,8 @@ void search_airport(char ID[]) {
 	middle = (lower + upper) / 2;
 	while (upper >= lower) {
 		if (!strcmp(ID, airports[middle].ID)) {
-			printf("%s %s %s %d\n", airports[middle].ID, airports[middle].country,
-			       airports[middle].city, flight_counter(airports[middle]));
+			printf("%s %s %s %d\n", airports[middle].ID, airports[middle].city,
+			       airports[middle].country, flight_counter(airports[middle]));
 			return;
 		}
 		if (before(ID, airports[middle].ID)) {
@@ -228,6 +226,62 @@ void search_airport(char ID[]) {
 	printf("%s: %s", ID, ERROR_NONEXISTENT_ID);
 }
 
+/* Returns -1 if d1 is before d2, 0 if they are the same date and 1 if d1 is
+ * after d2 */
+int relative_date(date d1, date d2) {
+	if (d1.year < d2.year)
+		return -1;
+	else if (d1.year == d2.year) {
+		if (d1.month < d2.month)
+			return -1;
+		else if (d1.month == d2.month) {
+			if (d1.day < d2.day)
+				return -1;
+			else if (d1.day == d2.day)
+				return 0;
+			else
+				return 1;
+		} else
+			return 1;
+	} else
+		return 1;
+}
+
+int relative_time(time t1, time t2) {
+	if (t1.hour < t2.hour)
+		return -1;
+	else if (t1.hour == t2.hour) {
+		if (t1.min < t2.min)
+			return -1;
+		else if (t1.min == t2.min)
+			return 0;
+		else
+			return 1;
+	} else
+		return 1;
+}
+
+int compare_timedate(flight a, flight b) {
+	int date, time;
+	date = relative_date(a.dep_date, b.dep_date);
+	time = relative_time(a.dep_time, b.dep_time);
+	if (date) 
+		return date;
+	return time;
+}
+
+void order_departures(flight list[]) {
+	int i, j, size = strlen(list);
+	flight v;
+	for (i = 1; i < size; i++) {
+		v = list[i];
+		for (j = i - 1; j >= 0 && compare_timedate(v, list[j]) == -1; j--) {
+			list[j + 1] = list[j];
+		}
+		list[j + 1] = v;
+	}
+}
+
 void search_departures(char ID[]) {
 	int i, n = 0;
 	flight list[MAX_FLIGHTS];
@@ -235,12 +289,15 @@ void search_departures(char ID[]) {
 		if (!strcmp(ID, flight_list[i].dep_ID)) list[n] = flight_list[i];
 		n++;
 	}
+	order_departures(list);
 	for (i = 0; i < n; i++) {
-		printf("%s %s %s %d-%d-%d %d:%d\n", list[i].code, list[i].dep_ID,
+		printf("%s %s %s %02d-%02d-%04d %02d:%02d\n", list[i].code, list[i].dep_ID,
 		       list[i].ar_ID, list[i].dep_date.day, list[i].dep_date.month,
 		       list[i].dep_date.year, list[i].dep_time.hour, list[i].dep_time.min);
 	}
 }
+
+void arrival_time();
 
 void search_arrivals(char ID[]) {
 	int i, n = 0;
@@ -249,10 +306,8 @@ void search_arrivals(char ID[]) {
 		if (!strcmp(ID, flight_list[i].ar_ID)) list[n] = flight_list[i];
 	}
 	for (i = 0; i < n; i++) {
-		printf("%s %s %s %d-%d-%d %d:%d\n", list[i].code, list[i].dep_ID,
+		printf("%s %s %s %02d-%02d-%04d %02d:%02d\n", list[i].code, list[i].dep_ID,
 		       list[i].ar_ID, list[i].dep_date.day, list[i].dep_date.month,
 		       list[i].dep_date.year, list[i].dep_time.hour, list[i].dep_time.min);
 	}
 }
-/* Escrito de acordo com Ortografia Clássica, anterior ao incoerente Acordo
- * Ortográfico de 1990. */
