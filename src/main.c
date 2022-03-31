@@ -205,6 +205,7 @@ void date_forward() {
 void read_char(char word[], int size, char end[]) {
 	int i, j;
 	char a = getchar();
+
 	for (i = 0; i < size - 1; i++) {
 		for (j = 0; end[j] != '\0'; j++) {
 			if (a == end[j]) {
@@ -270,8 +271,10 @@ void airport_order() {
 /* Searches for an airport in an ordered list through binary search */
 int search_airport(char ID[]) {
 	int cmp, lower = 0, middle, upper = num_airport - 1;
+
 	airport_order();
 	middle = (lower + upper) / 2;
+
 	while (upper >= lower) {
 		cmp = strcmp(ID, airports[middle].ID);
 		if (!cmp) {
@@ -284,6 +287,7 @@ int search_airport(char ID[]) {
 		}
 		middle = (lower + upper) / 2;
 	}
+
 	printf(ERROR_NONEXISTENT_ID, ID);
 	return -1;
 }
@@ -319,6 +323,7 @@ int flight_errors(flight input) {
 /* Checks if a flight code is valid */
 int valid_code(char code[]) {
 	int i, size = strlen(code);
+
 	for (i = 0; i < 2; i++) {
 		if (!isupper(code[i])) return 0;
 	}
@@ -332,6 +337,7 @@ int valid_code(char code[]) {
 /* Searches for a flight in a list through linear search */
 int search_flight(flight f) {
 	int i;
+
 	for (i = 0; i < num_flights; i++) {
 		if (!strcmp(f.code, flight_list[i].code) &&
 		    !compare_date(f.dep_date, flight_list[i].dep_date)) {
@@ -379,6 +385,7 @@ int compare_time(time t1, time t2) {
 /* Compares two time-date pairs */
 int compare_timedate(date dateA, time timeA, date dateB, time timeB) {
 	int date, time;
+
 	date = compare_date(dateA, dateB);
 	time = compare_time(timeA, timeB);
 	if (date) return date;
@@ -389,6 +396,7 @@ int compare_timedate(date dateA, time timeA, date dateB, time timeB) {
 void order_departures(int size) {
 	int i, j;
 	flight v;
+
 	for (i = 1; i < size; i++) {
 		v = departures_list[i];
 		for (j = i - 1;
@@ -405,12 +413,14 @@ void order_departures(int size) {
 /* Searches for flights departing from a given airport through its ID */
 void search_departures(char ID[]) {
 	int i, n = 0;
+
 	for (i = 0; i < num_flights; i++) {
 		if (!strcmp(ID, flight_list[i].dep_ID)) {
 			departures_list[n] = flight_list[i];
 			n++;
 		}
 	}
+
 	order_departures(n);
 	for (i = 0; i < n; i++) {
 		printf(DEP_AR_OUTPUT, departures_list[i].code, departures_list[i].ar_ID,
@@ -423,10 +433,12 @@ void search_departures(char ID[]) {
 /* Turns a flight struct into a arrival struct, calculating when it arrives */
 arrival flight_into_arrival(flight f) {
 	arrival ar;
+
 	ar.flight = f;
 	ar.date = f.dep_date;
 	ar.time.hour = f.dep_time.hour + f.duration.hour;
 	ar.time.min = f.dep_time.min + f.duration.min;
+
 	if (ar.time.min >= 60) {
 		ar.time.min -= 60;
 		ar.time.hour++;
@@ -438,7 +450,8 @@ arrival flight_into_arrival(flight f) {
 	if (ar.date.month == 2 && ar.date.day > 28) {
 		ar.date.day -= 28;
 		ar.date.month++;
-	} else if ((ar.date.month == 4 || ar.date.month == 6 || ar.date.month == 9) &&
+	} else if ((ar.date.month == 4 || ar.date.month == 6 || ar.date.month == 9 ||
+	            ar.date.month == 11) &&
 	           ar.date.day > 30) {
 		ar.date.day -= 30;
 		ar.date.month++;
@@ -450,6 +463,7 @@ arrival flight_into_arrival(flight f) {
 		ar.date.month -= 12;
 		ar.date.year++;
 	}
+
 	return ar;
 }
 
@@ -457,6 +471,7 @@ arrival flight_into_arrival(flight f) {
 void order_arrivals(int size) {
 	int i, j;
 	arrival v;
+
 	for (i = 1; i < size; i++) {
 		v = arrivals_list[i];
 		for (j = i - 1;
