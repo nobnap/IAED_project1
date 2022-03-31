@@ -1,7 +1,19 @@
+/*
+ * File: manager.h
+ *
+ * Author: Maria João Rosa
+ * Email: maria.j.rosa@tecnico.ulisboa.pt
+ *
+ * Description: Header file containing all standard libraries, constants,
+ * structures and algorithms used in the project.
+ *
+ */
+
 /* Standard Libraries */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 /* Max String Sizes */
 #define MAX_COUNTRY 31
@@ -15,7 +27,7 @@
 
 /* Error Messages */
 #define ERROR_INVALID_ID "invalid airport ID\n"
-#define ERROR_NONEXISTENT_ID "no such airport ID\n"
+#define ERROR_NONEXISTENT_ID "%s: no such airport ID\n"
 #define ERROR_AIRPORT_LIMIT "too many airports\n"
 #define ERROR_AIRPORT_DUPLICATE "duplicate airport\n"
 #define ERROR_DATE "invalid date\n"
@@ -25,7 +37,19 @@
 #define ERROR_FLIGHT_LIMIT "too many flights\n"
 #define ERROR_CAPACITY "invalid capacity\n"
 
-/* Structures */
+/* Input and Output Strings */
+#define AIRPORT_NEW "airport %s\n"
+#define AIRPORT_OUTPUT "%s %s %s %d\n"
+#define FLIGHT_INPUT "%s %s %s %d-%d-%d %d:%d %d:%d %d"
+#define FLIGHT_OUTPUT "%s %s %s %02d-%02d-%04d %02d:%02d\n"
+#define DEP_AR_OUTPUT "%s %s %02d-%02d-%04d %02d:%02d\n"
+#define DATE_INPUT "%d-%d-%d"
+#define DATE_OUTPUT "%02d-%02d-%04d\n"
+
+/* 
+ * Structures 
+ */
+
 typedef struct {
 	int day, month, year;
 } date;
@@ -33,12 +57,6 @@ typedef struct {
 typedef struct {
 	int hour, min;
 } time;
-
-typedef struct {
-	date date;
-	time time;
-} timeDate;
-
 
 typedef struct {
 	char ID[MAX_ID];
@@ -62,17 +80,11 @@ typedef struct {
 	time time;
 } arrival;
 
-date current_date;
-
-flight flight_list[MAX_FLIGHTS];
-int num_flights;
-
-airport airports[MAX_AIRPORT];
-int num_airport;
+/* 
+ * Command Related Functions
+ */
 
 int input_reader();
-
-/* Command-Related Functions */
 void add_airport();
 void list_airport();
 void flights();
@@ -80,19 +92,23 @@ void departures();
 void arrivals();
 void date_forward();
 
-/* Auxiliary Functions */
+/* 
+ * Auxiliary Functions 
+ */
+
 void read_char(char word[], int size, char end[]);
 int flight_counter(airport ap);
-int before(char A[], char B[]);
+int airport_error(airport input);
 void airport_order();
 int search_airport(char ID[]);
+int flight_errors(flight input);
 int valid_code(char code[]);
 int search_flight(flight input);
-int relative_date(date d1, date d2);
-int relative_time(time t1, time t2);
+int compare_date(date d1, date d2);
+int compare_time(time t1, time t2);
 int compare_timedate(date dateA, time timeA, date dateB, time timeB);
-void order_departures(flight list[], int size);
+void order_departures(int size);
 void search_departures(char ID[]);
 arrival flight_into_arrival(flight f);
-void order_arrivals(arrival list[], int size);
+void order_arrivals(int size);
 void search_arrivals(char ID[]);
