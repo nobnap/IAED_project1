@@ -41,6 +41,12 @@ int num_airport = 0;
  * Command Related Functions
  */
 
+/* Calls the input_reader() function */
+int main() {
+	while (input_reader());
+	return 0;
+}
+
 /* Determines which function to run depending on the command */
 int input_reader() {
 	char command;
@@ -68,13 +74,6 @@ int input_reader() {
 			break;
 	}
 	return 1;
-}
-
-/* Calls the input_reader() function */
-int main() {
-	while (input_reader()) {
-	};
-	return 0;
 }
 
 /* Adds airport to the airport list */
@@ -112,6 +111,8 @@ void list_airport() {
 
 			scanf("%s", ID);
 			i = search_airport(ID);
+			/* Searches for the airport and returns a number, if the number is >= 0
+			 * then it's the airports' index in the airport list */
 			if (i >= 0) {
 				printf(AIRPORT_OUTPUT, airports[i].ID, airports[i].city,
 				       airports[i].country, flight_counter(airports[i]));
@@ -184,6 +185,8 @@ void date_forward() {
 
 	scanf(DATE_INPUT, &new.day, &new.month, &new.year);
 
+	/* If the input date is before the current date or after the limit date, an
+	 * error message occurs */
 	if (compare_date(new, limit_date) == 1 ||
 	    compare_date(new, current_date) == -1) {
 		printf(ERROR_DATE);
@@ -207,6 +210,8 @@ void read_char(char word[], int size, char end[]) {
 	char a = getchar();
 
 	for (i = 0; i < size - 1; i++) {
+		/* If the new char is == to one of the chars on the end string, the word
+		 * ends */
 		for (j = 0; end[j] != '\0'; j++) {
 			if (a == end[j]) {
 				word[i] = '\0';
@@ -219,22 +224,20 @@ void read_char(char word[], int size, char end[]) {
 	word[i++] = '\0';
 }
 
+/* Checks a potential airport for errors */
 int airport_error(airport input) {
 	int i;
 	for (i = 0; input.ID[i] != '\0'; i++) {
 		if (!isupper(input.ID[i])) {
-			printf(ERROR_INVALID_ID);
-			return 1;
+			return printf(ERROR_INVALID_ID);
 		}
 	}
 	if (num_airport >= MAX_AIRPORT) {
-		printf(ERROR_AIRPORT_LIMIT);
-		return 1;
+		return printf(ERROR_AIRPORT_LIMIT);
 	}
 	for (i = 0; i < num_airport; i++) {
 		if (!strcmp(airports[i].ID, input.ID)) {
-			printf(ERROR_AIRPORT_DUPLICATE);
-			return 1;
+			return printf(ERROR_AIRPORT_DUPLICATE);
 		}
 	}
 	return 0;
@@ -262,8 +265,12 @@ void airport_order() {
 				t = airports[j - 1];
 				airports[j - 1] = airports[j];
 				airports[j] = t;
+				/* If a change is made to the list then it isn't ordered yet
+				 * and the process must continue */
 				done = 0;
 			}
+		/* If done == 1 then the list is ordered and further loops are
+		 * unnecessary */
 		if (done) break;
 	}
 }
@@ -277,9 +284,7 @@ int search_airport(char ID[]) {
 
 	while (upper >= lower) {
 		cmp = strcmp(ID, airports[middle].ID);
-		if (!cmp) {
-			return middle;
-		}
+		if (!cmp) return middle;
 		if (cmp < 0) {
 			upper = middle - 1;
 		} else {
@@ -342,6 +347,7 @@ int search_flight(flight f) {
 		if (!strcmp(f.code, flight_list[i].code) &&
 		    !compare_date(f.dep_date, flight_list[i].dep_date)) {
 			return 1;
+			/* Returns 1 if a flight with the same code and departure date exists */
 		}
 	}
 	return 0;
@@ -384,12 +390,11 @@ int compare_time(time t1, time t2) {
 
 /* Compares two time-date pairs */
 int compare_timedate(date dateA, time timeA, date dateB, time timeB) {
-	int date, time;
+	int date = compare_date(dateA, dateB);
 
-	date = compare_date(dateA, dateB);
-	time = compare_time(timeA, timeB);
 	if (date) return date;
-	return time;
+	/* Times are compared only if the dates are the same(date==0) */
+	return compare_time(timeA, timeB);
 }
 
 /* Orders flights from earliest to latest departure through insertion sort */
@@ -413,6 +418,7 @@ void order_departures(int size) {
 /* Searches for flights departing from a given airport through its ID */
 void search_departures(char ID[]) {
 	int i, n = 0;
+	/* The variable n is the number of flights departing from the given airport */
 
 	for (i = 0; i < num_flights; i++) {
 		if (!strcmp(ID, flight_list[i].dep_ID)) {
@@ -487,6 +493,7 @@ void order_arrivals(int size) {
 /* Searches for flights arriving at a given airport through its ID */
 void search_arrivals(char ID[]) {
 	int i, n = 0;
+	/* The variable n is the number of flights arriving at the given airport */
 
 	for (i = 0; i < num_flights; i++) {
 		if (!strcmp(ID, flight_list[i].ar_ID)) {
