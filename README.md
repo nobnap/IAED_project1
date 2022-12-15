@@ -1,5 +1,2 @@
-# 1º Projeto de IAED
-
-## Funções  
-
-1. `q`
+# Primeiro Projeto de IAED (Introdução a Algoritmos e Estruturas de Dados)
+ *Nota final:* 19.5  
