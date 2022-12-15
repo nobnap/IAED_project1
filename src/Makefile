@@ -1,3 +1,13 @@
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror -ansi -pedantic
+TARGETS = main
+
+.PHONY: all run clean
+
+all: $(TARGETS)
+
 run:
-	gcc -Wall -Wextra -Werror -ansi -pedantic main.c
-	./a.out
+	./$(TARGETS)
+
+clean:
+	rm -f *.o $(TARGETS)
